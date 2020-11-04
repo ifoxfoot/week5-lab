@@ -66,3 +66,80 @@ Are male chinstrap penguins significantly larger (body mass) than female chinstr
 ```{r}
 t.test(chinstraps_m, chinstraps_f, alternative = "greater")
 ``` 
+
+## One-way ANOVA
+
+## 1. Table of counts by penguin species and sex
+
+```{r}
+penguin_counts <- penguins %>% 
+  count(species, sex)
+
+penguin_counts
+```
+Create a subset of only female penguins
+```{r}
+penguins_f <- penguins %>%
+  filter(sex == "female")
+
+ggplot(data = penguins_f, aes(x = flipper_length_mm)) + geom_histogram(aes(fill = species)) + facet_wrap(~species, scales = "free")
+
+ggplot(data = penguins_f, aes(sample = flipper_length_mm)) + geom_qq(aes(color = species)) + facet_wrap(~species, scales = "free")
+```
+ ### Find Summary Statistics
+ 
+ starting from penguins_f, create a summary table that groups by speceies and returns the following:
+ 
+ mean flipper length
+ 
+ sd""
+ 
+ sample size ""
+ 
+ variance 'var' 
+ 
+ standard error = sd/sqrt(n)
+ 
+```{r}
+penguin_f_summary <- penguins_f %>%
+  group_by(species) %>% 
+  summarise(mean_fl = mean(flipper_length_mm), sd_fl = sd(flipper_length_mm), sample_size = n(), varience_fl = var(flipper_length_mm), se_fl = sd(flipper_length_mm)/sqrt(n()))
+
+penguin_f_summary
+
+leveneTest(flipper_length_mm ~ species, data = penguins_f)
+```
+ 
+### Beeswarm plot with mean +- 1sd
+
+```{r}
+ggplot() + geom_beeswarm(data = penguins_f, 
+                         aes(x= species, y = flipper_length_mm, 
+                             color = "gray70"),
+                             size = 3,
+                             alpha = 0.5) +
+  geom_point(data = penguin_f_summary, aes( x= species, y = mean_fl)) +
+  geom_errorbar(data = penguin_f_summary,
+                aes(x = species,
+                    ymax = mean_fl + sd_fl,
+                    ymin = mean_fl - sd_fl),
+                width = 0.1)
+  
+```
+
+## One-way ANOVA
+
+```{r}
+penguin_aov <- aov(flipper_length_mm ~ species, data = penguins_f)
+summary(penguin_aov)
+
+TukeyHSD(penguin_aov)
+```
+
+Type III Anova with the car package: Use if you have unbalance design, uneven sample sizes.
+```{r}
+penguin_lm <- lm(flipper_length_mm ~ species, data = penguins_f)
+penguin_aov_t3 <- Anova(penguin_lm, type = "III")
+penguin_aov_t3
+```
+
