@@ -1,0 +1,41 @@
+---
+title: "Penguin Size Comparison"
+author: "Iris Foxfoot"
+date: "11/3/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(palmerpenguins)
+library(effsize)
+library(broom)
+library(ggbeeswarm)
+library(car)
+```
+
+# Part 1
+
+Mass comparison: male & female chinstrap penguins
+
+
+```{r setup, include=FALSE}
+chinstraps <- penguins %>% 
+  filter(species == "Chinstrap")
+
+#Histograms
+ggplot(data = chinstraps, aes(x = body_mass_g)) + geom_histogram(bins = 10) + facet_wrap(~sex)
+
+#Quantile Quantile Plot
+ggplot(data = chinstraps, aes(sample = body_mass_g)) + geom_qq() + facet_wrap(~sex)
+
+#Descriptive Statistics
+chinstraps %>% 
+  groub_by(sex) %>% 
+  summarise(
+    mean_mass = mean(body_mass_g),
+    median_mass = median(body_mass_g),
+    sd_mass = sd(body_mass_g),
+    sample_size = n())
+```
